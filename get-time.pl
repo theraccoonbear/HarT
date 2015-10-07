@@ -7,7 +7,7 @@ use Data::Printer;
 use Cwd qw(abs_path realpath);
 use FindBin;
 use File::Basename;
-use lib dirname(abs_path($0));
+use lib dirname(abs_path($0)) . '/lib';
 
 use WebService::Harvest;
 use Time::DayOfWeek qw(:dow);
