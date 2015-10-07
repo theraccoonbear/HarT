@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use File::Slurp;
 use JSON::XS;
-use Data::Printer;
+#use Data::Printer;
 use Cwd qw(abs_path realpath);
 use FindBin;
 use File::Basename;
