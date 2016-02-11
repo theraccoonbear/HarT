@@ -35,6 +35,14 @@ my $start_date = {
     day => 1
 };
 
+if ($cfg->{start_date}) {
+    my @date_parts = split(/[-\/]/, $cfg->{start_date});
+    $start_date->{month} = $date_parts[0];
+    $start_date->{day} = $date_parts[1];
+    $start_date->{year} = $date_parts[2];
+}
+
+
 my $today = [localtime];
 
 my $end_date = {
@@ -45,7 +53,7 @@ my $end_date = {
 
 my $s_date = sprintf('%04d', $start_date->{year}) . sprintf('%02d', $start_date->{month}) . sprintf('%02d', $start_date->{day});
 my $e_date = sprintf('%04d', $end_date->{year}) . sprintf('%02d', $end_date->{month}) . sprintf('%02d', $end_date->{day});
-
+print "Getting time from $s_date to $e_date\n";
 my $entries = $harvest->getEntries($s_date, $e_date);
 
 my $hours_worked = 0;
