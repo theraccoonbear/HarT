@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use File::Slurp;
 use JSON::XS;
-#use Data::Printer;
+use Data::Printer;
 use Cwd qw(abs_path realpath);
 use FindBin;
 use File::Basename;
@@ -58,8 +58,14 @@ my $entries = $harvest->getEntries($s_date, $e_date);
 
 my $hours_worked = 0;
 my $est_hours = 0;
+my $work_by_date = {};
+my $src_strp = DateTime::Format::Strptime->new(
+    pattern => '%Y-%m-%d'
+);
 if ($entries->success) {
     map {
+				my $dt = $src_strp->parse_datetime($_->{day_entry}->{spent_at});
+				$work_by_date->{$dt->strftime("%Y%m%d")} = defined $work_by_date->{$dt->strftime("%Y%m%d")} ? $work_by_date->{$dt->strftime("%Y%m%d")} + $_->{day_entry}->{hours} : $_->{day_entry}->{hours};
         (my $d = $_->{day_entry}->{spent_at}) =~ s/[^\d]+//g;
         if ($d ne $e_date) {
             $est_hours += $_->{day_entry}->{hours};
@@ -78,6 +84,7 @@ my $dt = $strp->parse_datetime($s_date);
 my $dt_str;
 my $hours_needed = 0;
 my $work_days = 0;
+my $pto_days = 0;
 do {
     $dt = $dt->add(days => 1);
     $dt_str = $dt->strftime("%Y%m%d");
@@ -86,6 +93,7 @@ do {
     
     $hours_needed += ($dow =~ m/^(Sat|Sun)/) ? 0 : $daily_std;
     $work_days += ($dow =~ m/^(Sat|Sun)/) ? 0 : 1;
+		$pto_days += ($dow !~ m/^(Sat|Sun)/) && (!$work_by_date->{$dt_str} || $work_by_date->{$dt_str} < 1) ? 1 : 0;
     
 } while ($dt_str ne $e_date);
 
@@ -107,6 +115,7 @@ HARVEST TIME REPORT:
     Est Hours/Day: $est_avg_hours_per_work_day
     Tgt Hours/Day: $disp_daily_target
     Std Hours/Day: $disp_daily_std
+    PTO days taken: $pto_days
     
     Needed: $hours_needed hours
     Worked: $hours_worked hours
