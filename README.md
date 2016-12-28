@@ -37,5 +37,5 @@ When you first run HarT the script will create a config.json file for you based 
 If you're logged into your Harvest account, you can paste the following JavaScript snippet into your console to output the appropriate JSON (you'll still need to manually enter your password):
 
 ```
-(function(){var J=JSON,d=document,u=J.parse(d.getElementById('error_tracking-data-island').innerHTML).user,o={hostname:d.location.hostname,email:u.email,user_id:u.id,password:'CHANGE-ME'};d.getElementsByTagName('body')[0].innerHTML='<pre>'+J.stringify(o,null,2)+'</pre>';}())
+(function(){var url=$('#popover-user a[role="menuitem"]:eq(0)').attr('href');url=url.replace(/[^\d]+/g,'');console.log("Harvest User ID:",url);})();
 ```

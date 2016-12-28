@@ -56,14 +56,18 @@ my $e_date = sprintf('%04d', $end_date->{year}) . sprintf('%02d', $end_date->{mo
 print "Getting time from $s_date to $e_date\n";
 my $entries = $harvest->getEntries($s_date, $e_date);
 
+#p($entries);die;
+
 my $hours_worked = 0;
 my $est_hours = 0;
+my $sick_days = 0;
 my $work_by_date = {};
 my $src_strp = DateTime::Format::Strptime->new(
     pattern => '%Y-%m-%d'
 );
 if ($entries->success) {
     map {
+        
 				my $dt = $src_strp->parse_datetime($_->{day_entry}->{spent_at});
 				$work_by_date->{$dt->strftime("%Y%m%d")} = defined $work_by_date->{$dt->strftime("%Y%m%d")} ? $work_by_date->{$dt->strftime("%Y%m%d")} + $_->{day_entry}->{hours} : $_->{day_entry}->{hours};
         (my $d = $_->{day_entry}->{spent_at}) =~ s/[^\d]+//g;
@@ -71,6 +75,9 @@ if ($entries->success) {
             $est_hours += $_->{day_entry}->{hours};
         }
         $hours_worked += $_->{day_entry}->{hours};
+        if ($cfg->{sick_code} && $_->{day_entry}->{project_id} eq $cfg->{sick_code}) {
+					$sick_days++;
+				}
     } @{ $entries->{data} };
 }
 
@@ -116,6 +123,7 @@ HARVEST TIME REPORT:
     Tgt Hours/Day: $disp_daily_target
     Std Hours/Day: $disp_daily_std
     PTO days taken: $pto_days
+    Sick days taken: $sick_days
     
     Needed: $hours_needed hours
     Worked: $hours_worked hours

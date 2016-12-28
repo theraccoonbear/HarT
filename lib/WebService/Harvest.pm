@@ -28,6 +28,7 @@ sub BUILD {
     $self->mech->add_header(
         "Content-type" => 'text/json',
         "Accept" => 'application/json',
+        "autocheck" => 0,
         "Authorization" => "Basic " . encode_base64($self->config->{email} . ':' . $self->config->{password})
     );
 }
@@ -42,7 +43,8 @@ sub doGet {
     my $req = shift @_;
     my $url = $self->baseURL();
     $url .= $req;
-    $self->mech->get($url);
+    print STDERR "GET: $url\n";
+    my $www_resp = $self->mech->get($url);
     my $resp = {
         success => 0,
         data => []
@@ -52,8 +54,15 @@ sub doGet {
         $resp->{data} = decode_json($json);
         $resp->{success} = 1;
     } else {
-        p($self->mech);
-        exit(0);
+        print STDERR "STATUS: " . $www_resp->status_line . "\n";
+        if ($www_resp->status_line =~ m/^404/) {
+					print STDERR "Not found\n";
+				} else {
+            my $payload = decode_json($self->mech->content);
+            p($payload);
+        }
+        
+        exit(1);
     }
     my $h_resp = new WebService::Harvest::Response($resp);
 }
@@ -62,10 +71,27 @@ sub getEntries {
     my $self = shift @_;
     my $start = shift @_;
     my $end = shift @_;
-    
-    return $self->doGet('people/' . $self->config->{user_id} . '/entries?from=' . uri_encode($start) . '&to=' . uri_encode($end));
+    my $url = 'people/' . $self->config->{user_id} . '/entries?from=' . uri_encode($start) . '&to=' . uri_encode($end);
+    return $self->doGet($url);
 }
-    
+
+sub listProjects {
+    my $self = shift @_;
+    return $self->doGet('projects');
+}
+
+sub getProject {
+    my $self = shift @_;
+    my $project_id = shift @_;
+    my $start = shift @_;
+    my $end = shift @_;
+    return $self->doGet('projects/' . uri_encode($project_id) . '/entries?from=' . uri_encode($start) . '&to=' . uri_encode($end));
+}
+ 
+sub whoAmI {
+    my $self = shift @_;
+    return $self->doGet('account/who_am_i');
+}
 
 
 1;
