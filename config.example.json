@@ -4,5 +4,6 @@
     "password": "YOUR-PASSWORD",
     "user_id": "YOUR-USER-ID",
     "start_date": "MM/DD/YYYY *OPTIONAL*",
-    "sick_code": "<project-id> *OPTIONAL*"
+    "sick_codes": ["<project-id> *OPTIONAL*"],
+		"count_sick_time": false
 }

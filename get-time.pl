@@ -56,28 +56,38 @@ my $e_date = sprintf('%04d', $end_date->{year}) . sprintf('%02d', $end_date->{mo
 print "Getting time from $s_date to $e_date\n";
 my $entries = $harvest->getEntries($s_date, $e_date);
 
-#p($entries);die;
-
 my $hours_worked = 0;
 my $est_hours = 0;
+my $sick_codes = {map { $_ => 1 } @{$cfg->{sick_codes} ? $cfg->{sick_codes} : []}};
+my $count_sick_time = $cfg->{count_sick_time} ? 1 : undef;
 my $sick_days = 0;
+my $sick_hours = 0;
 my $work_by_date = {};
 my $src_strp = DateTime::Format::Strptime->new(
     pattern => '%Y-%m-%d'
 );
+
+my $proj_code_freq = {};
+
 if ($entries->success) {
     map {
-        
+        my $proj_id = $_->{day_entry}->{project_id};
+				my $hours = $_->{day_entry}->{hours};
 				my $dt = $src_strp->parse_datetime($_->{day_entry}->{spent_at});
 				$work_by_date->{$dt->strftime("%Y%m%d")} = defined $work_by_date->{$dt->strftime("%Y%m%d")} ? $work_by_date->{$dt->strftime("%Y%m%d")} + $_->{day_entry}->{hours} : $_->{day_entry}->{hours};
         (my $d = $_->{day_entry}->{spent_at}) =~ s/[^\d]+//g;
         if ($d ne $e_date) {
-            $est_hours += $_->{day_entry}->{hours};
+            $est_hours += $hours;
         }
-        $hours_worked += $_->{day_entry}->{hours};
-        if ($cfg->{sick_code} && $_->{day_entry}->{project_id} eq $cfg->{sick_code}) {
-					$sick_days++;
+				if (!$sick_codes->{$proj_id} || $count_sick_time) {
+					$hours_worked += $hours;
 				}
+				if ($sick_codes->{$proj_id}) {
+					$sick_days++;
+					$sick_hours += $hours;
+				}
+				
+				$proj_code_freq->{$proj_id} = $proj_code_freq->{$proj_id} ? $proj_code_freq->{$proj_id} + 1 : 1;
     } @{ $entries->{data} };
 }
 
@@ -116,18 +126,19 @@ my $disp_daily_target = sprintf('%0.2f', $daily_target);
 
 print <<__TIME;
 HARVEST TIME REPORT:
-    Work Days: $work_days
-    
-    Avg Hours/Day: $avg_hours_per_work_day
-    Est Hours/Day: $est_avg_hours_per_work_day
-    Tgt Hours/Day: $disp_daily_target
-    Std Hours/Day: $disp_daily_std
-    PTO days taken: $pto_days
-    Sick days taken: $sick_days
-    
-    Needed: $hours_needed hours
-    Worked: $hours_worked hours
-    Accrued: $delta hours
-    Est Accrued: $est_delta hours
+            Work Days: $work_days
+
+        Avg Hours/Day: $avg_hours_per_work_day
+        Est Hours/Day: $est_avg_hours_per_work_day
+        Tgt Hours/Day: $disp_daily_target
+        Std Hours/Day: $disp_daily_std
+       PTO days taken: $pto_days
+    Sich hours logged: $sick_hours
+      Sick days taken: $sick_days
+
+               Needed: $hours_needed hours
+               Worked: $hours_worked hours
+              Accrued: $delta hours
+          Est Accrued: $est_delta hours
 
 __TIME
