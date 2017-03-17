@@ -16,10 +16,10 @@ use DateTime::Format::Strptime;
 my $cfg_file = dirname(abs_path($0)) . '/config.json';
 
 if (! -f $cfg_file) {
-    (my $cfg_tmpl = $cfg_file) =~ s/\.json/\.example.json/;
-    print "You don't have a config.json file!  I've copied config.sample.json as a starting template.\n\n";
-    `cp '$cfg_tmpl' '$cfg_file'`;
-    exit(0);
+	(my $cfg_tmpl = $cfg_file) =~ s/\.json/\.example.json/;
+	print "You don't have a config.json file!  I've copied config.sample.json as a starting template.\n\n";
+	`cp '$cfg_tmpl' '$cfg_file'`;
+	exit(0);
 }
 
 my $cfg = decode_json(read_file($cfg_file));
@@ -30,25 +30,25 @@ my $daily_target = $cfg->{daily_target_hours} || 8.5;
 my $harvest = new WebService::Harvest(config => $cfg);
 
 my $start_date = {
-    year => 2015,
-    month => 8,
-    day => 1
+	year => 2015,
+	month => 8,
+	day => 1
 };
 
 if ($cfg->{start_date}) {
-    my @date_parts = split(/[-\/]/, $cfg->{start_date});
-    $start_date->{month} = $date_parts[0];
-    $start_date->{day} = $date_parts[1];
-    $start_date->{year} = $date_parts[2];
+	my @date_parts = split(/[-\/]/, $cfg->{start_date});
+	$start_date->{month} = $date_parts[0];
+	$start_date->{day} = $date_parts[1];
+	$start_date->{year} = $date_parts[2];
 }
 
 
 my $today = [localtime];
 
 my $end_date = {
-    year => $today->[5] + 1900,
-    month => $today->[4] + 1,
-    day => $today->[3]
+	year => $today->[5] + 1900,
+	month => $today->[4] + 1,
+	day => $today->[3]
 };
 
 my $s_date = sprintf('%04d', $start_date->{year}) . sprintf('%02d', $start_date->{month}) . sprintf('%02d', $start_date->{day});
@@ -70,30 +70,30 @@ my $src_strp = DateTime::Format::Strptime->new(
 my $proj_code_freq = {};
 
 if ($entries->success) {
-    map {
-        my $proj_id = $_->{day_entry}->{project_id};
-				my $hours = $_->{day_entry}->{hours};
-				my $dt = $src_strp->parse_datetime($_->{day_entry}->{spent_at});
-				$work_by_date->{$dt->strftime("%Y%m%d")} = defined $work_by_date->{$dt->strftime("%Y%m%d")} ? $work_by_date->{$dt->strftime("%Y%m%d")} + $_->{day_entry}->{hours} : $_->{day_entry}->{hours};
-        (my $d = $_->{day_entry}->{spent_at}) =~ s/[^\d]+//g;
-        if ($d ne $e_date) {
-            $est_hours += $hours;
-        }
-				if (!$sick_codes->{$proj_id} || $count_sick_time) {
-					$hours_worked += $hours;
-				}
-				if ($sick_codes->{$proj_id}) {
-					$sick_days++;
-					$sick_hours += $hours;
-				}
-				
-				$proj_code_freq->{$proj_id} = $proj_code_freq->{$proj_id} ? $proj_code_freq->{$proj_id} + 1 : 1;
-    } @{ $entries->{data} };
+	map {
+		my $proj_id = $_->{day_entry}->{project_id};
+		my $hours = $_->{day_entry}->{hours};
+		my $dt = $src_strp->parse_datetime($_->{day_entry}->{spent_at});
+		$work_by_date->{$dt->strftime("%Y%m%d")} = defined $work_by_date->{$dt->strftime("%Y%m%d")} ? $work_by_date->{$dt->strftime("%Y%m%d")} + $_->{day_entry}->{hours} : $_->{day_entry}->{hours};
+		(my $d = $_->{day_entry}->{spent_at}) =~ s/[^\d]+//g;
+		if (!$sick_codes->{$proj_id} || $count_sick_time) {
+			if ($d ne $e_date) {
+				$est_hours += $hours;
+			}
+			$hours_worked += $hours;
+		}
+		if ($sick_codes->{$proj_id}) {
+			$sick_days++;
+			$sick_hours += $hours;
+		}
+		
+		$proj_code_freq->{$proj_id} = $proj_code_freq->{$proj_id} ? $proj_code_freq->{$proj_id} + 1 : 1;
+	} @{ $entries->{data} };
 }
 
 my $strp = DateTime::Format::Strptime->new(
-    #pattern => '%m/%d/%Y'
-    pattern => '%Y%m%d'
+	#pattern => '%m/%d/%Y'
+	pattern => '%Y%m%d'
 );
 
 # convert date to 
@@ -103,15 +103,15 @@ my $hours_needed = 0;
 my $work_days = 0;
 my $pto_days = 0;
 do {
-    $dt = $dt->add(days => 1);
-    $dt_str = $dt->strftime("%Y%m%d");
-    my $dow = DayOfWeek($dt->year, $dt->month, $dt->day);
-    $est_hours += ($dt_str eq $e_date && $dow !~ m/^(Sat|Sun)/) ? $daily_target : 0;
-    
-    $hours_needed += ($dow =~ m/^(Sat|Sun)/) ? 0 : $daily_std;
-    $work_days += ($dow =~ m/^(Sat|Sun)/) ? 0 : 1;
-		$pto_days += ($dow !~ m/^(Sat|Sun)/) && (!$work_by_date->{$dt_str} || $work_by_date->{$dt_str} < 1) ? 1 : 0;
-    
+	$dt = $dt->add(days => 1);
+	$dt_str = $dt->strftime("%Y%m%d");
+	my $dow = DayOfWeek($dt->year, $dt->month, $dt->day);
+	$est_hours += ($dt_str eq $e_date && $dow !~ m/^(Sat|Sun)/) ? $daily_target : 0;
+	
+	$hours_needed += ($dow =~ m/^(Sat|Sun)/) ? 0 : $daily_std;
+	$work_days += ($dow =~ m/^(Sat|Sun)/) ? 0 : 1;
+	$pto_days += ($dow !~ m/^(Sat|Sun)/) && (!$work_by_date->{$dt_str} || $work_by_date->{$dt_str} < 1) ? 1 : 0;
+	
 } while ($dt_str ne $e_date);
 
 my $delta = sprintf('%0.2f', $hours_worked - $hours_needed);
