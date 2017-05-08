@@ -33,7 +33,7 @@ my $entries = $harvest->getEntries('20170501', '20171231');
 #my $projects = $harvest->listProjects();
 #my $project = $harvest->getProject(13593722, '20170101', '20170508');
 
-#p($entries);
+p($entries);
 #p($projects);
 #p($project);
 
