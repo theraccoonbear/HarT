@@ -15,7 +15,8 @@ So a possible scenario where a naive "pipe" approach would fall down might be li
 * A Jira ticket has 10 hours estimated.
 * A user logs 6 hours against that ticket in Harvest.
 * Our system sees the new 6 hour entry, applies it to the time spent in Jira, leaving a balance of 4 hours left on the ticket.
-* The user subsequently revises their Harvest time entry to 4 hours.
+* The user subsequently revises their Harvest time entry to 3 hours.
+* Now we have 3 hours actually logged in Harvest, 6 hours logged in Jira, and an outstanding time balance in Jira of 4 hours, instead of what ought to be 7 hours remaining.
 
 If we simply pump new Harvest entries into Jira we're left wondering where the other 2 hours in Jira came from (they didn't; but we don't have an easy way to tell that).
 
