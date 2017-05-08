@@ -29,9 +29,12 @@ my $daily_target = $cfg->{daily_target_hours} || 8.5;
 
 my $harvest = new WebService::Harvest(config => $cfg);
 
-#my $entries = $harvest->getEntries('20160101', '20161231');
+my $entries = $harvest->getEntries('20170101', '20171231');
 #my $projects = $harvest->listProjects();
-my $project = $harvest->getProject(11441780, '20160101', '20161231');
-p($project);
+#my $project = $harvest->getProject(13593722, '20170101', '20170508');
 
-p($harvest->whoAmI());
+#p($entries);
+#p($projects);
+#p($project);
+
+#p($harvest->whoAmI());
