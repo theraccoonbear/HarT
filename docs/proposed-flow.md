@@ -2,6 +2,8 @@
 ## A (mostly sane) method for keeping Jira estimated/used hour tracking in sync with Harvest
 
 ### Discoveries
+* 3rd party off-the-shelf solutions are incomplete/half-baked.
+* Involved vendors (Harvest, Atlassian) have, thus far, declined to tackle this obvious need.
 * Harvest provides a fairly straightforward API as you might expect for a no-frills time-keeping system.
 * Jira provides much more robust API functionality, being a much more complicated project management system.
 * While Jira provides ticket meta-data, it appears to be Jira-only meta-data, not an arbitrary "dangle this value here" type of thing.
@@ -22,7 +24,7 @@ If we simply pump new Harvest entries into Jira we're left wondering where the e
 
 ### Proposed Solution
 * For each user:
-	* Pull all Harvest time entries for current period (1 month?) that can be correlated with a Jira ticket.
+	* Pull all Harvest time entries for current period (1 month?) filter in those which can be correlated with a Jira ticket.
 	* Check all of these Harvest time entries against our data store to see if they were:
 		* Already added to Jira
 		* and, Whether they were added to Jira with the same number of hours.
