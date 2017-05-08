@@ -18,7 +18,7 @@ So a possible scenario where a naive "pipe" approach would fall down might be li
 * The user subsequently revises their Harvest time entry to 3 hours.
 * Now we have 3 hours actually logged in Harvest, 6 hours logged in Jira, and an outstanding time balance in Jira of 4 hours, instead of what ought to be 7 hours remaining.
 
-If we simply pump new Harvest entries into Jira we're left wondering where the other 2 hours in Jira came from (they didn't; but we don't have an easy way to tell that).
+If we simply pump new Harvest entries into Jira we're left wondering where the extra hours in Jira came from (they didn't; but we don't have an easy way to tell that).
 
 ### Proposed Solution
 * For each user:
